@@ -27,7 +27,7 @@ from tensorflow.keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelChec
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.initializers import glorot_uniform
 
-model_name = "resnet50_ct"
+model_name = "resnet50_ct_pet_1"
 time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 batch_size = 8
 log_dir = "./logs/" + model_name + time_str
@@ -250,7 +250,7 @@ def train():
     model.fit(x=X_train,
               y=Y_train,
               batch_size=8,
-              epochs=20,
+              epochs=100,
               validation_data=(X_test, Y_test),
               callbacks=[checkpoint,
                          checkpoint_fixed_name,
@@ -259,7 +259,7 @@ def train():
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
     train()

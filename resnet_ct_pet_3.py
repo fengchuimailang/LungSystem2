@@ -294,7 +294,7 @@ def train():
     model.fit(x=[X_train, aux_X_train],
               y=Y_train,
               batch_size=8,
-              epochs=20,
+              epochs=100,
               validation_data=([X_test, aux_X_test], Y_test),
               callbacks=[checkpoint,
                          checkpoint_fixed_name,
@@ -303,7 +303,7 @@ def train():
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "3"
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
     train()

@@ -5,20 +5,20 @@ print(sys.path)
 import datetime
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
-from resnet_ct import ResNet50
+from resnet_ct_pet_1 import ResNet50
 from utils import *
 
 
-model_path = "/home/liubo/nn_project/LungSystem2/models/guaduate/resnet50_ct/resnet50_ct_best.hd5"
+model_path = "/home/liubo/nn_project/LungSystem2/models/guaduate/resnet50_ct_pet_1/resnet50_ct_pet_1_best.hd5"
 
 def predict():
     """
     进行预测
     """
 
-    X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = load_dataset_ct()
+    X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = load_dataset_ct_pet_1()
 
-    # 不需要进行归一化
+    # Normalize image vectors
     # X_train = X_train_orig / 255.
     # X_test = X_test_orig / 255.
 
@@ -54,4 +54,5 @@ def predict():
 
 
 if __name__ == "__main__":
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     predict()

@@ -29,24 +29,28 @@ def load_dataset_ct():
     train_set_y_orig = []
     test_set_x_orig = []
     test_set_y_orig = []
-    # train_dir = "/Users/liubo/Documents/graduation_project/mnist_train_512"
-    # test_dir = "/Users/liubo/Documents/graduation_project/mnist_test_512"
-    train_dir = "/home/liubo/data/MNIST/mnist_train_512"
-    test_dir = "/home/liubo/data/MNIST/mnist_test_512"
-    for label in range(5):
-        for file_path in os.listdir(train_dir + "/" + str(label))[:100]:
-            file_path = train_dir + "/" + str(label) + "/" + file_path
-            img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    train_dirs = ["/home/liubo/data/graduate/CTSlice/fold0",
+                  "/home/liubo/data/graduate/CTSlice/fold1",
+                  "/home/liubo/data/graduate/CTSlice/fold2",
+                  "/home/liubo/data/graduate/CTSlice/fold3"
+                  ]
+    test_dir = "/home/liubo/data/graduate/CTSlice/fold4"
+    for train_dir in train_dirs:
+        for file_path in os.listdir(train_dir):
+            file_path = train_dir + "/" + file_path
+            img = np.load(file_path)
             img = img[:, :, np.newaxis]
+            label = int(file_path.split(".")[0].split("_")[-1])
             train_set_x_orig.append(img)
             train_set_y_orig.append(label)
-    for label in range(5):
-        for file_path in os.listdir(test_dir + "/" + str(label))[:20]:
-            file_path = test_dir + "/" + str(label) + "/" + file_path
-            img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
-            img = img[:, :, np.newaxis]
-            test_set_x_orig.append(img)
-            test_set_y_orig.append(label)
+
+    for file_path in os.listdir(test_dir):
+        file_path = test_dir + "/" + file_path
+        img = np.load(file_path)
+        img = img[:, :, np.newaxis]
+        label = int(file_path.split(".")[0].split("_")[-1])
+        test_set_x_orig.append(img)
+        test_set_y_orig.append(label)
     train_set_x_orig = np.array(train_set_x_orig)
     train_set_y_orig = np.array(train_set_y_orig)
     test_set_x_orig = np.array(test_set_x_orig)
@@ -68,22 +72,30 @@ def load_dataset_pet():
     test_set_y_orig = []
     # train_dir = "/Users/liubo/Documents/graduation_project/mnist_train_512"
     # test_dir = "/Users/liubo/Documents/graduation_project/mnist_test_512"
-    train_dir = "/home/liubo/data/MNIST/mnist_train_128"
-    test_dir = "/home/liubo/data/MNIST/mnist_test_128"
-    for label in range(5):
-        for file_path in os.listdir(train_dir + "/" + str(label))[:100]:
-            file_path = train_dir + "/" + str(label) + "/" + file_path
-            img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
+    train_dirs = ["/home/liubo/data/graduate/PETSlice/fold0",
+                  "/home/liubo/data/graduate/PETSlice/fold1",
+                  "/home/liubo/data/graduate/PETSlice/fold2",
+                  "/home/liubo/data/graduate/PETSlice/fold3"
+                  ]
+    test_dir = "/home/liubo/data/graduate/PETSlice/fold4"
+    for train_dir in train_dirs:
+        for file_path in os.listdir(train_dir):
+            file_path = train_dir + "/" + file_path
+            img = np.load(file_path)
+            img = cv2.resize(img,(128,128))
             img = img[:, :, np.newaxis]
+            label = int(file_path.split(".")[0].split("_")[-1])
             train_set_x_orig.append(img)
             train_set_y_orig.append(label)
-    for label in range(5):
-        for file_path in os.listdir(test_dir + "/" + str(label))[:20]:
-            file_path = test_dir + "/" + str(label) + "/" + file_path
-            img = cv2.imread(file_path, cv2.IMREAD_GRAYSCALE)
-            img = img[:, :, np.newaxis]
-            test_set_x_orig.append(img)
-            test_set_y_orig.append(label)
+
+    for file_path in os.listdir(test_dir):
+        file_path = test_dir + "/" + file_path
+        img = np.load(file_path)
+        img = cv2.resize(img, (128, 128))
+        img = img[:, :, np.newaxis]
+        label = int(file_path.split(".")[0].split("_")[-1])
+        test_set_x_orig.append(img)
+        test_set_y_orig.append(label)
     train_set_x_orig = np.array(train_set_x_orig)
     train_set_y_orig = np.array(train_set_y_orig)
     test_set_x_orig = np.array(test_set_x_orig)
@@ -105,42 +117,57 @@ def load_dataset_ct_pet_1():
     test_set_x_ct_orig = []
     test_set_x_pet_orig = []
     test_set_y_orig = []
-    # train_dir = "/Users/liubo/Documents/graduation_project/mnist_train_512"
-    # test_dir = "/Users/liubo/Documents/graduation_project/mnist_test_512"
-    train_ct_dir = "/home/liubo/data/MNIST/mnist_train_512"
-    test_ct_dir = "/home/liubo/data/MNIST/mnist_test_512"
-    train_pet_dir = "/home/liubo/data/MNIST/mnist_train_128"
-    test_pet_dir = "/home/liubo/data/MNIST/mnist_test_128"
-    for label in range(5):
-        for file_path in os.listdir(train_ct_dir + "/" + str(label))[:100]:
-            ct_file_path = train_ct_dir + "/" + str(label) + "/" + file_path
-            img_ct = cv2.imread(ct_file_path, cv2.IMREAD_GRAYSCALE)
+
+    train_ct_dirs = ["/home/liubo/data/graduate/CTSlice/fold0",
+                  "/home/liubo/data/graduate/CTSlice/fold1",
+                  "/home/liubo/data/graduate/CTSlice/fold2",
+                  "/home/liubo/data/graduate/CTSlice/fold3"
+                  ]
+    test_ct_dir = "/home/liubo/data/graduate/CTSlice/fold4"
+
+    train_pet_dirs = ["/home/liubo/data/graduate/PETSlice/fold0",
+                  "/home/liubo/data/graduate/PETSlice/fold1",
+                  "/home/liubo/data/graduate/PETSlice/fold2",
+                  "/home/liubo/data/graduate/PETSlice/fold3"
+                  ]
+    test_pet_dir = "/home/liubo/data/graduate/PETSlice/fold4"
+
+    for i in range(len(train_ct_dirs)):
+        train_ct_dir = train_ct_dirs[i]
+        train_pet_dir = train_pet_dirs[i]
+        for ct_file_name in os.listdir(train_ct_dir):
+            ct_file_path = train_ct_dir + "/" + ct_file_name
+            img_ct = np.load(ct_file_path)
             # img_ct = img_ct[:, :, np.newaxis]
             train_set_x_ct_orig.append(img_ct)
 
-            pet_file_path = train_pet_dir + "/" + str(label) + "/" + file_path
-            img_pet = cv2.imread(pet_file_path, cv2.IMREAD_GRAYSCALE)
-            # 放缩到与ct一样大小
+            pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+            pet_file_path = train_pet_dir + "/"  + pet_file_name
+            img_pet = np.load(pet_file_path)
             img_pet = cv2.resize(img_pet, (512, 512))
             # img_pet = img_pet[:, :, np.newaxis]
             train_set_x_pet_orig.append(img_pet)
 
+            label = int(ct_file_name.split(".")[0].split("_")[-1])
             train_set_y_orig.append(label)
-    for label in range(5):
-        for file_path in os.listdir(test_ct_dir + "/" + str(label))[:20]:
-            ct_file_path = test_ct_dir + "/" + str(label) + "/" + file_path
-            img_ct = cv2.imread(ct_file_path, cv2.IMREAD_GRAYSCALE)
-            # img_ct = img_ct[:, :, np.newaxis]
-            test_set_x_ct_orig.append(img_ct)
 
-            pet_file_path = test_pet_dir + "/" + str(label) + "/" + file_path
-            img_pet = cv2.imread(pet_file_path, cv2.IMREAD_GRAYSCALE)
-            # 放缩到与ct一样大小
-            img_pet = cv2.resize(img_pet, (512, 512))
-            # img_pet = img_pet[:, :, np.newaxis]
-            test_set_x_pet_orig.append(img_pet)
+    for ct_file_name in os.listdir(test_ct_dir):
+        ct_file_path = test_ct_dir + "/" + ct_file_name
+        img_ct = np.load(ct_file_path)
+        # img_ct = img_ct[:, :, np.newaxis]
+        test_set_x_ct_orig.append(img_ct)
 
-            test_set_y_orig.append(label)
+        pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+        pet_file_path = test_pet_dir + "/" + pet_file_name
+        img_pet = np.load(pet_file_path)
+        # 放缩到与ct一样大小
+        img_pet = cv2.resize(img_pet, (512, 512))
+        # img_pet = img_pet[:, :, np.newaxis]
+        test_set_x_pet_orig.append(img_pet)
+
+        label = int(ct_file_name.split(".")[0].split("_")[-1])
+        test_set_y_orig.append(label)
+
     train_set_x_ct_orig = np.array(train_set_x_ct_orig)
     train_set_x_pet_orig = np.array(train_set_x_pet_orig)
     train_set_y_orig = np.array(train_set_y_orig)
@@ -168,38 +195,54 @@ def load_dataset_ct_pet_2():
     test_set_x_ct_orig = []
     test_set_x_pet_orig = []
     test_set_y_orig = []
-    # train_dir = "/Users/liubo/Documents/graduation_project/mnist_train_512"
-    # test_dir = "/Users/liubo/Documents/graduation_project/mnist_test_512"
-    train_ct_dir = "/home/liubo/data/MNIST/mnist_train_512"
-    test_ct_dir = "/home/liubo/data/MNIST/mnist_test_512"
-    train_pet_dir = "/home/liubo/data/MNIST/mnist_train_128"
-    test_pet_dir = "/home/liubo/data/MNIST/mnist_test_128"
-    for label in range(5):
-        for file_path in os.listdir(train_ct_dir + "/" + str(label))[:100]:
-            ct_file_path = train_ct_dir + "/" + str(label) + "/" + file_path
-            img_ct = cv2.imread(ct_file_path, cv2.IMREAD_GRAYSCALE)
+
+    train_ct_dirs = ["/home/liubo/data/graduate/CTSlice/fold0",
+                     "/home/liubo/data/graduate/CTSlice/fold1",
+                     "/home/liubo/data/graduate/CTSlice/fold2",
+                     "/home/liubo/data/graduate/CTSlice/fold3"
+                     ]
+    test_ct_dir = "/home/liubo/data/graduate/CTSlice/fold4"
+
+    train_pet_dirs = ["/home/liubo/data/graduate/PETSlice/fold0",
+                      "/home/liubo/data/graduate/PETSlice/fold1",
+                      "/home/liubo/data/graduate/PETSlice/fold2",
+                      "/home/liubo/data/graduate/PETSlice/fold3"
+                      ]
+    test_pet_dir = "/home/liubo/data/graduate/PETSlice/fold4"
+
+    for i in range(len(train_ct_dirs)):
+        train_ct_dir = train_ct_dirs[i]
+        train_pet_dir = train_pet_dirs[i]
+        for ct_file_name in os.listdir(train_ct_dir):
+            ct_file_path = train_ct_dir + "/" + ct_file_name
+            img_ct = np.load(ct_file_path)
             img_ct = img_ct[:, :, np.newaxis]
             train_set_x_ct_orig.append(img_ct)
 
-            pet_file_path = train_pet_dir + "/" + str(label) + "/" + file_path
-            img_pet = cv2.imread(pet_file_path, cv2.IMREAD_GRAYSCALE)
+            pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+            pet_file_path = train_pet_dir + "/" + pet_file_name
+            img_pet = np.load(pet_file_path)
+            img_pet = cv2.resize(img_pet,(128,128))
             img_pet = img_pet[:, :, np.newaxis]
             train_set_x_pet_orig.append(img_pet)
-
+            label = int(ct_file_name.split(".")[0].split("_")[-1])
             train_set_y_orig.append(label)
-    for label in range(5):
-        for file_path in os.listdir(test_ct_dir + "/" + str(label))[:20]:
-            ct_file_path = test_ct_dir + "/" + str(label) + "/" + file_path
-            img_ct = cv2.imread(ct_file_path, cv2.IMREAD_GRAYSCALE)
-            img_ct = img_ct[:, :, np.newaxis]
-            test_set_x_ct_orig.append(img_ct)
 
-            pet_file_path = test_pet_dir + "/" + str(label) + "/" + file_path
-            img_pet = cv2.imread(pet_file_path, cv2.IMREAD_GRAYSCALE)
-            img_pet = img_pet[:, :, np.newaxis]
-            test_set_x_pet_orig.append(img_pet)
+    for ct_file_name in os.listdir(test_ct_dir):
+        ct_file_path = test_ct_dir + "/" + ct_file_name
+        img_ct = np.load(ct_file_path)
+        img_ct = img_ct[:, :, np.newaxis]
+        test_set_x_ct_orig.append(img_ct)
 
-            test_set_y_orig.append(label)
+        pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+        pet_file_path = test_pet_dir + "/" + pet_file_name
+        img_pet = np.load(pet_file_path)
+        img_pet = cv2.resize(img_pet, (128, 128))
+        img_pet = img_pet[:, :, np.newaxis]
+        test_set_x_pet_orig.append(img_pet)
+
+        label = int(ct_file_name.split(".")[0].split("_")[-1])
+        test_set_y_orig.append(label)
 
     train_set_x_ct_orig = np.array(train_set_x_ct_orig)
     train_set_x_pet_orig = np.array(train_set_x_pet_orig)
