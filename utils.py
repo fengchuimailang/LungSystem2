@@ -24,6 +24,44 @@ import shutil
 #     return train_set_x_orig, train_set_y_orig, test_set_x_orig, test_set_y_orig, classes
 
 
+def augu_one_input(x, y):
+    x_5class = [[], [], [], [], []]
+    y_5class = [[], [], [], [], []]
+    for i in range(len(x)):
+        label = y[i]
+        x_5class[label].append(x[i])
+        y_5class[label].append(y[i])
+    max_count = max([len(l) for l in x_5class])
+    augu_x = []
+    augu_y = []
+    for label in range(5):
+        n = int(max_count / len(x_5class[label]))
+        augu_x.extend(x_5class[label] * n)
+        augu_y.extend(y_5class[label] * n)
+    return np.array(augu_x), np.array(augu_y)
+
+
+def augu_two_input(x1, x2, y):
+    x1_5class = [[], [], [], [], []]
+    x2_5class = [[], [], [], [], []]
+    y_5class = [[], [], [], [], []]
+    for i in range(len(x1)):
+        label = y[i]
+        x1_5class[label].append(x1[i])
+        x2_5class[label].append(x2[i])
+        y_5class[label].append(y[i])
+    max_count = max([len(l) for l in x1_5class])
+    augu_x1 = []
+    augu_x2 = []
+    augu_y = []
+    for label in range(5):
+        n = int(max_count / len(x1_5class[label]))
+        augu_x1.extend(x1_5class[label] * n)
+        augu_x2.extend(x2_5class[label] * n)
+        augu_y.extend(y_5class[label] * n)
+    return np.array(augu_x1), np.array(augu_x2), np.array(augu_y)
+
+
 def load_dataset_ct():
     train_set_x_orig = []
     train_set_y_orig = []
@@ -56,6 +94,9 @@ def load_dataset_ct():
     test_set_x_orig = np.array(test_set_x_orig)
     test_set_y_orig = np.array(test_set_y_orig)
 
+    # 平衡 不同种类的样本
+    train_set_x_orig, train_set_y_orig = augu_one_input(train_set_x_orig, train_set_y_orig)
+
     # shuffle trainset
     m = train_set_x_orig.shape[0]
     permutation = list(np.random.permutation(m))
@@ -82,7 +123,7 @@ def load_dataset_pet():
         for file_path in os.listdir(train_dir):
             file_path = train_dir + "/" + file_path
             img = np.load(file_path)
-            img = cv2.resize(img,(128,128))
+            img = cv2.resize(img, (128, 128))
             img = img[:, :, np.newaxis]
             label = int(file_path.split(".")[0].split("_")[-1])
             train_set_x_orig.append(img)
@@ -100,6 +141,9 @@ def load_dataset_pet():
     train_set_y_orig = np.array(train_set_y_orig)
     test_set_x_orig = np.array(test_set_x_orig)
     test_set_y_orig = np.array(test_set_y_orig)
+
+    # 平衡 不同种类的样本
+    train_set_x_orig, train_set_y_orig = augu_one_input(train_set_x_orig, train_set_y_orig)
 
     # shuffle trainset
     m = train_set_x_orig.shape[0]
@@ -119,17 +163,17 @@ def load_dataset_ct_pet_1():
     test_set_y_orig = []
 
     train_ct_dirs = ["/home/liubo/data/graduate/CTSlice/fold0",
-                  "/home/liubo/data/graduate/CTSlice/fold1",
-                  "/home/liubo/data/graduate/CTSlice/fold2",
-                  "/home/liubo/data/graduate/CTSlice/fold3"
-                  ]
+                     "/home/liubo/data/graduate/CTSlice/fold1",
+                     "/home/liubo/data/graduate/CTSlice/fold2",
+                     "/home/liubo/data/graduate/CTSlice/fold3"
+                     ]
     test_ct_dir = "/home/liubo/data/graduate/CTSlice/fold4"
 
     train_pet_dirs = ["/home/liubo/data/graduate/PETSlice/fold0",
-                  "/home/liubo/data/graduate/PETSlice/fold1",
-                  "/home/liubo/data/graduate/PETSlice/fold2",
-                  "/home/liubo/data/graduate/PETSlice/fold3"
-                  ]
+                      "/home/liubo/data/graduate/PETSlice/fold1",
+                      "/home/liubo/data/graduate/PETSlice/fold2",
+                      "/home/liubo/data/graduate/PETSlice/fold3"
+                      ]
     test_pet_dir = "/home/liubo/data/graduate/PETSlice/fold4"
 
     for i in range(len(train_ct_dirs)):
@@ -142,7 +186,7 @@ def load_dataset_ct_pet_1():
             train_set_x_ct_orig.append(img_ct)
 
             pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
-            pet_file_path = train_pet_dir + "/"  + pet_file_name
+            pet_file_path = train_pet_dir + "/" + pet_file_name
             img_pet = np.load(pet_file_path)
             img_pet = cv2.resize(img_pet, (512, 512))
             # img_pet = img_pet[:, :, np.newaxis]
@@ -178,6 +222,9 @@ def load_dataset_ct_pet_1():
     # train test ct和pet进行合并
     train_set_x_orig = np.stack((train_set_x_ct_orig, train_set_x_pet_orig), axis=3)
     test_set_x_orig = np.stack((test_set_x_ct_orig, test_set_x_pet_orig), axis=3)
+
+    # 平衡 不同种类的样本
+    train_set_x_orig, train_set_y_orig = augu_one_input(train_set_x_orig, train_set_y_orig)
 
     # shuffle trainset
     m = train_set_x_orig.shape[0]
@@ -222,7 +269,7 @@ def load_dataset_ct_pet_2():
             pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
             pet_file_path = train_pet_dir + "/" + pet_file_name
             img_pet = np.load(pet_file_path)
-            img_pet = cv2.resize(img_pet,(128,128))
+            img_pet = cv2.resize(img_pet, (128, 128))
             img_pet = img_pet[:, :, np.newaxis]
             train_set_x_pet_orig.append(img_pet)
             label = int(ct_file_name.split(".")[0].split("_")[-1])
@@ -250,6 +297,10 @@ def load_dataset_ct_pet_2():
     test_set_x_ct_orig = np.array(test_set_x_ct_orig)
     test_set_x_pet_orig = np.array(test_set_x_pet_orig)
     test_set_y_orig = np.array(test_set_y_orig)
+
+    # 平衡 不同种类的样本
+    train_set_x_ct_orig, train_set_x_pet_orig, train_set_y_orig = augu_two_input(train_set_x_ct_orig,
+                                                                                 train_set_x_pet_orig, train_set_y_orig)
 
     # shuffle trainset
     m = train_set_x_ct_orig.shape[0]
@@ -361,4 +412,3 @@ def predict(X, parameters):
     prediction = sess.run(p, feed_dict={x: X})
 
     return prediction
-

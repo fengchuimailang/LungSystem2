@@ -256,7 +256,7 @@ def train():
 
 
 if __name__ == "__main__":
-    os.environ["CUDA_VISIBLE_DEVICES"] = "0,1,2,3"
+    os.environ["CUDA_VISIBLE_DEVICES"] = "1"
     if not os.path.exists(model_save_path):
         os.makedirs(model_save_path)
     train()
