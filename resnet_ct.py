@@ -208,11 +208,7 @@ def ResNet50(input_shape=(512, 512, 1), classes=5):
 
 
 def train():
-    X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = load_dataset_ct()
-
-    # Normalize image vectors
-    X_train = X_train_orig / 255.
-    X_test = X_test_orig / 255.
+    X_train, Y_train_orig, X_test, Y_test_orig = load_dataset_ct()
 
     # Convert training and test labels to one hot matrices
     Y_train = convert_to_one_hot(Y_train_orig, 5).T

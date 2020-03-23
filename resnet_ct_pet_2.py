@@ -1,5 +1,5 @@
 # 参考 https://www.yanxishe.com/TextTranslation/1643?from=zhihu
-# 第一种融合方式 在输入处进行融合
+# 第二种融合方式 在输入卷积，然后再进行融合
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -217,14 +217,8 @@ def ResNet50(main_input_shape=(512, 512, 1), aux_input_shape=(128, 128, 1), clas
 
 
 def train():
-    train_set_x_ct_orig, train_set_x_pet_orig, train_set_y_orig, test_set_x_ct_orig, test_set_x_pet_orig, test_set_y_orig = load_dataset_ct_pet_2()
+    X_train, aux_X_train, train_set_y_orig, X_test, aux_X_test, test_set_y_orig = load_dataset_ct_pet_2()
 
-    # Normalize image vectors
-    X_train = train_set_x_ct_orig / 255.
-    X_test = test_set_x_ct_orig / 255.
-
-    aux_X_train = train_set_x_pet_orig / 255.
-    aux_X_test = test_set_x_pet_orig / 255.
 
     # Convert training and test labels to one hot matrices
     Y_train = convert_to_one_hot(train_set_y_orig, 5).T

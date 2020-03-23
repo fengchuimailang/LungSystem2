@@ -49,7 +49,7 @@ def predict():
 
     # 结果评估
     target_names = ['class 0', 'class 1', 'class 2', 'class 3', 'class 4']
-    classification_show = classification_report(test_set_y_orig, predict_label, labels=None, target_names=target_names)
+    classification_show = classification_report(test_set_y_orig, predict_label, labels=None, target_names=target_names,digits=3)
     print(classification_show)
 
 

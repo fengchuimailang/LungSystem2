@@ -5,11 +5,11 @@ print(sys.path)
 import datetime
 import numpy as np
 from sklearn.metrics import confusion_matrix, classification_report
-from resnet_ct_pet_2 import ResNet50
+from resnet_ct_pet_3 import ResNet50
 from utils import *
 
 
-model_path = "/home/liubo/nn_project/LungSystem2/models/guaduate/resnet50_ct_pet_2/resnet50_ct_pet_2_best.hd5"
+model_path = "/home/liubo/nn_project/LungSystem2/models/guaduate/resnet50_ct_pet_3/resnet50_ct_pet_3_best.hd5"
 
 def predict():
     """
@@ -49,7 +49,7 @@ def predict():
 
     # 结果评估
     target_names = ['class 0', 'class 1', 'class 2', 'class 3', 'class 4']
-    classification_show = classification_report(test_set_y_orig, predict_label, labels=None, target_names=target_names)
+    classification_show = classification_report(test_set_y_orig, predict_label, labels=None, target_names=target_names,digits=3)
     print(classification_show)
 
 

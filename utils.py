@@ -5,6 +5,7 @@ import h5py
 import math
 import cv2
 import shutil
+import csv
 
 
 # def load_dataset():
@@ -60,6 +61,31 @@ def augu_two_input(x1, x2, y):
         augu_x2.extend(x2_5class[label] * n)
         augu_y.extend(y_5class[label] * n)
     return np.array(augu_x1), np.array(augu_x2), np.array(augu_y)
+
+
+def augu_three_input(x1, x2, x3, y):
+    x1_5class = [[], [], [], [], []]
+    x2_5class = [[], [], [], [], []]
+    x3_5class = [[], [], [], [], []]
+    y_5class = [[], [], [], [], []]
+    for i in range(len(x1)):
+        label = y[i]
+        x1_5class[label].append(x1[i])
+        x2_5class[label].append(x2[i])
+        x3_5class[label].append(x3[i])
+        y_5class[label].append(y[i])
+    max_count = max([len(l) for l in x1_5class])
+    augu_x1 = []
+    augu_x2 = []
+    augu_x3 = []
+    augu_y = []
+    for label in range(5):
+        n = int(max_count / len(x1_5class[label]))
+        augu_x1.extend(x1_5class[label] * n)
+        augu_x2.extend(x2_5class[label] * n)
+        augu_x3.extend(x3_5class[label] * n)
+        augu_y.extend(y_5class[label] * n)
+    return np.array(augu_x1), np.array(augu_x2), np.array(augu_x3), np.array(augu_y)
 
 
 def load_dataset_ct():
@@ -310,6 +336,106 @@ def load_dataset_ct_pet_2():
     train_set_y_orig = train_set_y_orig[permutation]
 
     return train_set_x_ct_orig, train_set_x_pet_orig, train_set_y_orig, test_set_x_ct_orig, test_set_x_pet_orig, test_set_y_orig
+
+
+def load_dataset_ct_pet_4():
+    train_set_x_ct_orig = []
+    train_set_x_pet_orig = []
+    train_set_xyr = []
+    train_set_y_orig = []
+    test_set_x_ct_orig = []
+    test_set_x_pet_orig = []
+    test_set_xyr = []
+    test_set_y_orig = []
+
+    train_ct_dirs = ["/home/liubo/data/graduate/CTSlice/fold0",
+                     "/home/liubo/data/graduate/CTSlice/fold1",
+                     "/home/liubo/data/graduate/CTSlice/fold2",
+                     "/home/liubo/data/graduate/CTSlice/fold3"
+                     ]
+    test_ct_dir = "/home/liubo/data/graduate/CTSlice/fold4"
+
+    train_pet_dirs = ["/home/liubo/data/graduate/PETSlice/fold0",
+                      "/home/liubo/data/graduate/PETSlice/fold1",
+                      "/home/liubo/data/graduate/PETSlice/fold2",
+                      "/home/liubo/data/graduate/PETSlice/fold3"
+                      ]
+    test_pet_dir = "/home/liubo/data/graduate/PETSlice/fold4"
+
+    # label.csv
+    label_csv = "/home/liubo/nn_project/LungSystem2/Cancercla_data_set/label.csv"
+    idx_x_y_r_dict = {}
+    with open("label.csv") as f_r:
+        reader = csv.DictReader(f_r)
+        for row in reader:
+            idx = row["idx"]
+            x = int(row["x_pix"]) / 512
+            y = int(row["y_pix"]) / 512
+            r = int(row["ct_r_pix"]) / 512
+            idx_x_y_r_dict[idx] = [x, y, r]
+
+    for i in range(len(train_ct_dirs)):
+        train_ct_dir = train_ct_dirs[i]
+        train_pet_dir = train_pet_dirs[i]
+        for ct_file_name in os.listdir(train_ct_dir):
+            ct_file_path = train_ct_dir + "/" + ct_file_name
+            img_ct = np.load(ct_file_path)
+            img_ct = img_ct[:, :, np.newaxis]
+            train_set_x_ct_orig.append(img_ct)
+
+            pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+            pet_file_path = train_pet_dir + "/" + pet_file_name
+            img_pet = np.load(pet_file_path)
+            img_pet = cv2.resize(img_pet, (128, 128))
+            img_pet = img_pet[:, :, np.newaxis]
+            train_set_x_pet_orig.append(img_pet)
+
+            xyr = idx_x_y_r_dict[ct_file_name.split("_")[0]]
+            train_set_xyr.append(xyr)
+
+            label = int(ct_file_name.split(".")[0].split("_")[-1])
+            train_set_y_orig.append(label)
+
+    for ct_file_name in os.listdir(test_ct_dir):
+        ct_file_path = test_ct_dir + "/" + ct_file_name
+        img_ct = np.load(ct_file_path)
+        img_ct = img_ct[:, :, np.newaxis]
+        test_set_x_ct_orig.append(img_ct)
+
+        pet_file_name = "PETSlice".join(ct_file_name.split("CTSlice"))
+        pet_file_path = test_pet_dir + "/" + pet_file_name
+        img_pet = np.load(pet_file_path)
+        img_pet = cv2.resize(img_pet, (128, 128))
+        img_pet = img_pet[:, :, np.newaxis]
+        test_set_x_pet_orig.append(img_pet)
+
+        xyr = int(ct_file_name.split(".")[0].split("_")[-1])
+        test_set_xyr.append(xyr)
+
+        label = int(ct_file_name.split(".")[0].split("_")[-1])
+        test_set_y_orig.append(label)
+
+    train_set_x_ct_orig = np.array(train_set_x_ct_orig)
+    train_set_x_pet_orig = np.array(train_set_x_pet_orig)
+    train_set_y_orig = np.array(train_set_y_orig)
+    test_set_x_ct_orig = np.array(test_set_x_ct_orig)
+    test_set_x_pet_orig = np.array(test_set_x_pet_orig)
+    test_set_y_orig = np.array(test_set_y_orig)
+
+    # 平衡 不同种类的样本
+    train_set_x_ct_orig, train_set_x_pet_orig, train_set_xyr, train_set_y_orig = augu_three_input(train_set_x_ct_orig,
+                                                                                                  train_set_x_pet_orig,
+                                                                                                  train_set_xyr,
+                                                                                                  train_set_y_orig)
+
+    # shuffle trainset
+    m = train_set_x_ct_orig.shape[0]
+    permutation = list(np.random.permutation(m))
+    train_set_x_ct_orig = train_set_x_ct_orig[permutation, :, :, :]
+    train_set_x_pet_orig = train_set_x_pet_orig[permutation, :, :, :]
+    train_set_y_orig = train_set_y_orig[permutation]
+
+    return train_set_x_ct_orig, train_set_x_pet_orig, train_set_xyr, train_set_y_orig, test_set_x_ct_orig, test_set_x_pet_orig, test_set_xyr, test_set_y_orig
 
 
 def random_mini_batches(X, Y, mini_batch_size=64, seed=0):

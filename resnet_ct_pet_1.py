@@ -1,5 +1,5 @@
 # 参考 https://www.yanxishe.com/TextTranslation/1643?from=zhihu
-# 第一种融合方式 在输入处进行融合
+# 第一种融合方式，放大pet 两通道
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -206,11 +206,7 @@ def ResNet50(input_shape=(512, 512, 2), classes=5):
 
 
 def train():
-    X_train_orig, Y_train_orig, X_test_orig, Y_test_orig = load_dataset_ct_pet_1()
-
-    # Normalize image vectors
-    X_train = X_train_orig / 255.
-    X_test = X_test_orig / 255.
+    X_train, Y_train_orig, X_test, Y_test_orig = load_dataset_ct_pet_1()
 
     # Convert training and test labels to one hot matrices
     Y_train = convert_to_one_hot(Y_train_orig, 5).T

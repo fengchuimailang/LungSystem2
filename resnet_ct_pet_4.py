@@ -1,4 +1,5 @@
 # 参考 https://www.yanxishe.com/TextTranslation/1643?from=zhihu
+# 第四种融合方式 在输入处进行融合，并添加坐标信息和半径信息
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,19 +21,20 @@ from tensorflow.keras import applications
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import optimizers
 from tensorflow.keras.models import Sequential, Model, load_model
-from tensorflow.keras.layers import Input, Add, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, \
+from tensorflow.keras.layers import Concatenate,Input, Add, Dense, Activation, ZeroPadding2D, BatchNormalization, Flatten, Conv2D, \
     AveragePooling2D, MaxPooling2D, GlobalMaxPooling2D, Dropout, Flatten, MaxPool2D, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import TensorBoard, ReduceLROnPlateau, ModelCheckpoint
 from tensorflow.keras.optimizers import SGD, Adam
 from tensorflow.keras.initializers import glorot_uniform
 
-model_name = "resnet50_pet"
+model_name = "resnet50_ct_pet_4"
 time_str = time.strftime("%Y%m%d_%H%M%S", time.localtime())
 batch_size = 8
 log_dir = "./logs/" + model_name + time_str
 work_dir = "/home/liubo/nn_project/LungSystem2/workdir/" + model_name + time_str
 model_save_path = "/home/liubo/nn_project/LungSystem2/models/guaduate/" + model_name
 learn_rate = 0.0001
+
 
 def identity_block(X, f, filters, stage, block):
     """
@@ -138,7 +140,7 @@ def convolutional_block(X, f, filters, stage, block, s=2):
     return X
 
 
-def ResNet50(input_shape=(128, 128, 1), classes=5):
+def ResNet50(main_input_shape=(512, 512, 1), aux_input_shape=(128, 128, 1),other_info=(3),classes=5):
     """
     Implementation of the popular ResNet50 the following architecture:
     CONV2D -> BATCHNORM -> RELU -> MAXPOOL -> CONVBLOCK -> IDBLOCK*2 -> CONVBLOCK -> IDBLOCK*3
@@ -153,16 +155,24 @@ def ResNet50(input_shape=(128, 128, 1), classes=5):
     """
 
     # Define the input as a tensor with shape input_shape
-    X_input = Input(input_shape)
+    X_input = Input(main_input_shape)
+    aux_X_input = Input(aux_input_shape)
+    other_info = Input(other_info)
 
     # Zero-Padding
     X = ZeroPadding2D((3, 3))(X_input)
+    aux_X = ZeroPadding2D((3, 3))(aux_X_input)
 
     # Stage 1
     X = Conv2D(64, (7, 7), strides=(2, 2), name='conv1', kernel_initializer=glorot_uniform(seed=0))(X)
     X = BatchNormalization(axis=3, name='bn_conv1')(X)
     X = Activation('relu')(X)
     X = MaxPooling2D((3, 3), strides=(2, 2))(X)
+
+    # Stage 1 aux
+    aux_X = Conv2D(512, (7, 7), strides=(2, 2),name="conv1_aux", kernel_initializer=glorot_uniform(seed=0))(aux_X)
+    aux_X = BatchNormalization(axis=3, name='bn_conv1_aux')(aux_X)
+    aux_X = Activation('relu')(aux_X)
 
     # Stage 2
     X = convolutional_block(X, f=3, filters=[64, 64, 256], stage=2, block='a', s=1)
@@ -176,6 +186,9 @@ def ResNet50(input_shape=(128, 128, 1), classes=5):
     X = identity_block(X, 3, [128, 128, 512], stage=3, block='b')
     X = identity_block(X, 3, [128, 128, 512], stage=3, block='c')
     X = identity_block(X, 3, [128, 128, 512], stage=3, block='d')
+
+    # add aux to main stream
+    X = Add()([X, aux_X])
 
     # Stage 4 (≈6 lines)
     X = convolutional_block(X, f=3, filters=[256, 256, 1024], stage=4, block='a', s=2)
@@ -197,19 +210,22 @@ def ResNet50(input_shape=(128, 128, 1), classes=5):
 
     # output layer
     X = Flatten()(X)
+    # add other info
+    X = Concatenate()([X, other_info])
     X = Dense(classes, activation='softmax', name='fc' + str(classes), kernel_initializer=glorot_uniform(seed=0))(X)
 
     # Create model
-    model = Model(inputs=X_input, outputs=X, name=model_name)
+    model = Model(inputs=[X_input, aux_X_input], outputs=X, name=model_name)
     return model
 
 
 def train():
-    X_train, Y_train_orig, X_test, Y_test_orig = load_dataset_pet()
+    X_train, aux_X_train, train_set_xyr, train_set_y_orig, X_test, aux_X_test, train_set_xyr, test_set_y_orig = load_dataset_ct_pet_4()
+
 
     # Convert training and test labels to one hot matrices
-    Y_train = convert_to_one_hot(Y_train_orig, 5).T
-    Y_test = convert_to_one_hot(Y_test_orig, 5).T
+    Y_train = convert_to_one_hot(train_set_y_orig, 5).T
+    Y_test = convert_to_one_hot(test_set_y_orig, 5).T
 
     print("number of training examples = " + str(X_train.shape[0]))
     print("number of test examples = " + str(X_test.shape[0]))
@@ -222,7 +238,6 @@ def train():
     adam = Adam(lr=learn_rate)
     model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
     model.summary()
-
 
     if not os.path.exists(work_dir):
         os.makedirs(work_dir)
@@ -242,11 +257,11 @@ def train():
                                             save_weights_only=False,
                                             mode='auto',
                                             period=1)
-    model.fit(x=X_train,
+    model.fit(x=[X_train, aux_X_train],
               y=Y_train,
               batch_size=8,
               epochs=100,
-              validation_data=(X_test, Y_test),
+              validation_data=([X_test, aux_X_test,train_set_xyr], Y_test),
               callbacks=[checkpoint,
                          checkpoint_fixed_name,
                          TensorBoard(log_dir=log_dir)]
